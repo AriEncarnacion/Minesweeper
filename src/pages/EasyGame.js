@@ -1,8 +1,8 @@
-import Board from "../components/Board/BoardIndex";
+import Board from "../components/Board/Board";
 
 function EasyGame() {
   return (
-    <Board className={"Small-Board"} />
+    <Board className={"Small-Board"} NUM_ROWS={8} NUM_COLUMNS={8} NUM_MINES={10}/>
   );
 }
 
