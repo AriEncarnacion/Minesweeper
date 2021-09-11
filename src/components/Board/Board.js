@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {Cell} from "../Cell/Cell";
+import GenerateField from "./Field"; // rows, cols, mines
 
 let key = 1;
 function uniqueKey() {
@@ -7,6 +8,8 @@ function uniqueKey() {
 }
 
 function initializeState(props) {
+  let mineCords = GenerateField(props.NUM_ROWS, props.NUM_COLUMNS, props.NUM_MINES);
+
   let board = Array(props.NUM_ROWS).fill(Array(props.NUM_COLUMNS).fill({color: "gray", isCleared: false}));
   board = board.map((row, rowIdx) => row.map((col, colIdx) => {
     return {...board[rowIdx][colIdx], row: rowIdx, column: colIdx}
