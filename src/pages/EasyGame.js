@@ -1,8 +1,13 @@
 import Board from "../components/Board/Board";
-
-function EasyGame() {
+import GenerateField from "../components/Board/Field";
+function EasyGame(props) {
   return (
-    <Board className={"Small-Board"} NUM_ROWS={8} NUM_COLUMNS={8} NUM_MINES={10}/>
+    <Board className={"Small-Board"}
+           FIELD={GenerateField(props.NUM_ROWS, props.NUM_COLUMNS, props.NUM_MINES)}
+           NUM_ROWS={props.NUM_ROWS}
+           NUM_COLUMNS={props.NUM_COLUMNS}
+           NUM_MINES={props.NUM_MINES}
+    />
   );
 }
 

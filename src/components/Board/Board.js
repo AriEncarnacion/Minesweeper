@@ -1,6 +1,5 @@
 import {useState} from "react";
 import {Cell} from "../Cell/Cell";
-import GenerateField from "./Field"; // rows, cols, mines
 
 let key = 1;
 function uniqueKey() {
@@ -8,8 +7,6 @@ function uniqueKey() {
 }
 
 function initializeState(props) {
-  let mineCords = GenerateField(props.NUM_ROWS, props.NUM_COLUMNS, props.NUM_MINES);
-
   let board = Array(props.NUM_ROWS).fill(Array(props.NUM_COLUMNS).fill({color: "gray", isCleared: false}));
   board = board.map((row, rowIdx) => row.map((col, colIdx) => {
     return {...board[rowIdx][colIdx], row: rowIdx, column: colIdx}
@@ -37,18 +34,43 @@ const Row = (props) => {
 
 export default function Board(props) {
   const [boardState, setBoardState] = useState(initializeState(props));
+  console.log(props.FIELD["mines"]);
 
   function handleClick(rowIdx, colIdx) {
-    console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}, ${JSON.stringify(boardState)}`);
+    // console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}, ${JSON.stringify(boardState)}`);
+    console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`);
 
     let board = boardState.board;
 
     let affectedRow = board[rowIdx].slice();
-    affectedRow[colIdx] = {
-      ...affectedRow[colIdx],
-      color: "red",
-      isCleared: true
-    };
+    let selectedCords = [rowIdx, colIdx];
+
+    let mines = props.FIELD["mines"]
+    let foundMine = false;
+    let itr = 0;
+    while(foundMine === false && itr < mines.length) {
+      if (mines[itr].x === selectedCords[0] && mines[itr].y === selectedCords[1]) {
+        foundMine = true;
+      }
+        itr++;
+    }
+
+    // MARK: Cell selection conditional
+    if (foundMine) {
+      console.log("BOOM!");
+      affectedRow[colIdx] = {
+        ...affectedRow[colIdx],
+        color: "blue",
+        isCleared: true
+      };
+    } else {
+      console.log("safe......");
+      affectedRow[colIdx] = {
+        ...affectedRow[colIdx],
+        color: "red",
+        isCleared: true
+      };
+    }
 
     let newBoard = board.slice();
     newBoard[rowIdx] = affectedRow;
@@ -56,6 +78,7 @@ export default function Board(props) {
       ...boardState,
       board: newBoard
     });
+
   }
 
   return (

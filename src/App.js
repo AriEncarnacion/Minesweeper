@@ -1,10 +1,12 @@
-import logo from './logo.svg';
 import './App.css';
 import EasyGame from "./pages/EasyGame";
 
 function App() {
   return (
-    <EasyGame/>
+    <EasyGame NUM_ROWS={8}
+              NUM_COLUMNS={8}
+              NUM_MINES={10}
+    />
   );
 }
 

@@ -4,9 +4,10 @@ export default function GenerateField(rows, cols, mines) {
   }
 
   function initMineCords() {
-    let cords = [];
+    let cords = {"mines": []};
     for(let i = 0; i < mines; i++) {
-      cords.push(getRandomCord());
+      let xy = getRandomCord()
+      cords["mines"].push({x: xy[0], y: xy[1]});
     }
     return cords;
   }
