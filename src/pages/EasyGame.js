@@ -1,14 +1,23 @@
+import React, {Component} from "react";
 import Board from "../components/Board/Board";
 import GenerateField from "../components/Board/Field";
-function EasyGame(props) {
-  return (
-    <Board className={"Small-Board"}
-           FIELD={GenerateField(props.NUM_ROWS, props.NUM_COLUMNS, props.NUM_MINES)}
-           NUM_ROWS={props.NUM_ROWS}
-           NUM_COLUMNS={props.NUM_COLUMNS}
-           NUM_MINES={props.NUM_MINES}
-    />
-  );
+import './EasyGame.css';
+
+class EasyGame extends Component {
+
+  render() {
+    return(
+      <>
+        <div className={'bg'}>
+          <Board className={"Small-Board"}
+                 FIELD={GenerateField(this.props.NUM_ROWS, this.props.NUM_COLUMNS, this.props.NUM_MINES)}
+                 NUM_ROWS={this.props.NUM_ROWS}
+                 NUM_COLUMNS={this.props.NUM_COLUMNS}
+                 NUM_MINES={this.props.NUM_MINES}
+          />
+        </div>
+    </>);
+  }
 }
 
 export default EasyGame;

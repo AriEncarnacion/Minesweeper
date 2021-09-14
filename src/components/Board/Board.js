@@ -8,6 +8,7 @@ function uniqueKey() {
 
 function initializeState(props) {
   let board = Array(props.NUM_ROWS).fill(Array(props.NUM_COLUMNS).fill({color: "gray", isCleared: false}));
+
   board = board.map((row, rowIdx) => row.map((col, colIdx) => {
     return {...board[rowIdx][colIdx], row: rowIdx, column: colIdx}
   }));
@@ -32,39 +33,43 @@ const Row = (props) => {
   );
 }
 
+function checkForMines(selected, mines) {
+  let foundMine = false;
+  let itr = 0;
+  while(foundMine === false && itr < mines.length) {
+    if (mines[itr].col === selected[0] && mines[itr].row === selected[1]) {
+      foundMine = true;
+    }
+    itr++;
+  }
+  return foundMine;
+}
+
 export default function Board(props) {
+  //DEBUG
+  // console.log(props.FIELD);
+  // console.log(`Revealed bool: ${props.REVEALED}`);
+  //DEBUG END
+
   const [boardState, setBoardState] = useState(initializeState(props));
-  console.log(props.FIELD["mines"]);
 
   function handleClick(rowIdx, colIdx) {
     // console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}, ${JSON.stringify(boardState)}`);
-    console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`);
+    // console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`); //DEBUG
 
     let board = boardState.board;
-
     let affectedRow = board[rowIdx].slice();
-    let selectedCords = [rowIdx, colIdx];
-
-    let mines = props.FIELD["mines"]
-    let foundMine = false;
-    let itr = 0;
-    while(foundMine === false && itr < mines.length) {
-      if (mines[itr].x === selectedCords[0] && mines[itr].y === selectedCords[1]) {
-        foundMine = true;
-      }
-        itr++;
-    }
 
     // MARK: Cell selection conditional
-    if (foundMine) {
-      console.log("BOOM!");
+    if (checkForMines([rowIdx, colIdx], props.FIELD)) {
+      console.log("BOOM!"); //DEBUG
       affectedRow[colIdx] = {
         ...affectedRow[colIdx],
         color: "blue",
         isCleared: true
       };
     } else {
-      console.log("safe......");
+      console.log("safe......"); //DEBUG
       affectedRow[colIdx] = {
         ...affectedRow[colIdx],
         color: "red",
@@ -72,13 +77,51 @@ export default function Board(props) {
       };
     }
 
-    let newBoard = board.slice();
+    let newBoard = board.slice(); // MARK: making a reference?
     newBoard[rowIdx] = affectedRow;
     setBoardState({
       ...boardState,
       board: newBoard
     });
+  }
 
+  function revealOneMine(rowIdx, colIdx) {
+    // console.log(`revealOneMine called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`); //DEBUG
+    let board = boardState.board;
+
+    let affectedRow = board[rowIdx].slice();
+    affectedRow[colIdx] = {
+      ...affectedRow[colIdx],
+      color: "green",
+      isCleared: true
+    };
+    console.log("AffectedRow:");
+    console.log(affectedRow);
+
+    let newBoard = board.slice();
+    newBoard[rowIdx] = affectedRow;
+    console.log("NewBoard:");
+    console.log(newBoard);
+
+    setBoardState({
+      ...boardState,
+      board: newBoard
+    });
+
+    console.log("Board after setBoardState:");
+    console.log(boardState.board);
+  }
+
+  function revealMines() {
+    props.FIELD.forEach(mine => {
+      revealOneMine(mine[0], mine[1]);
+      console.log("boardState:");
+      console.log(boardState.board);
+    });
+  }
+
+  function logMines() {
+    console.log(props.FIELD);
   }
 
   return (
@@ -94,6 +137,8 @@ export default function Board(props) {
         }
         </tbody>
       </table>
+      <button onClick={revealMines}>REVEAL MINES</button>
+      <button onClick={logMines}>Mine Cords</button>
     </>
   );
 }
