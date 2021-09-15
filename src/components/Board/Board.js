@@ -37,7 +37,7 @@ function checkForMines(selected, mines) {
   let foundMine = false;
   let itr = 0;
   while(foundMine === false && itr < mines.length) {
-    if (mines[itr].col === selected[0] && mines[itr].row === selected[1]) {
+    if (mines[itr][0] === selected[0] && mines[itr][1] === selected[1]) {
       foundMine = true;
     }
     itr++;
@@ -46,11 +46,6 @@ function checkForMines(selected, mines) {
 }
 
 export default function Board(props) {
-  //DEBUG
-  // console.log(props.FIELD);
-  // console.log(`Revealed bool: ${props.REVEALED}`);
-  //DEBUG END
-
   const [boardState, setBoardState] = useState(initializeState(props));
 
   function handleClick(rowIdx, colIdx) {
@@ -85,38 +80,21 @@ export default function Board(props) {
     });
   }
 
-  function revealOneMine(rowIdx, colIdx) {
-    // console.log(`revealOneMine called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`); //DEBUG
+  function revealMines() {
     let board = boardState.board;
-
-    let affectedRow = board[rowIdx].slice();
-    affectedRow[colIdx] = {
-      ...affectedRow[colIdx],
-      color: "green",
-      isCleared: true
-    };
-    console.log("AffectedRow:");
-    console.log(affectedRow);
-
     let newBoard = board.slice();
-    newBoard[rowIdx] = affectedRow;
-    console.log("NewBoard:");
-    console.log(newBoard);
+    props.FIELD.forEach(mine => {
+      let affectedRow = newBoard[mine[0]].slice();
+      affectedRow[mine[1]] = {
+        ...affectedRow[mine[1]],
+        color: "green"
+      };
+      newBoard[mine[0]] = affectedRow;
+    });
 
     setBoardState({
       ...boardState,
       board: newBoard
-    });
-
-    console.log("Board after setBoardState:");
-    console.log(boardState.board);
-  }
-
-  function revealMines() {
-    props.FIELD.forEach(mine => {
-      revealOneMine(mine[0], mine[1]);
-      console.log("boardState:");
-      console.log(boardState.board);
     });
   }
 
