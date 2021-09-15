@@ -16,7 +16,8 @@ function initializeState(props) {
   return {
     board,
     gameWin: false,
-    gameOver: false
+    gameOver: false,
+    boardRevealed: false
   }
 }
 
@@ -74,10 +75,28 @@ export default function Board(props) {
 
     let newBoard = board.slice(); // MARK: making a reference?
     newBoard[rowIdx] = affectedRow;
-    setBoardState({
-      ...boardState,
-      board: newBoard
-    });
+    if (affectedRow[colIdx].color === "blue") {
+      setBoardState({
+        ...boardState,
+        board:newBoard,
+        gameOver: true
+      });
+    } else {
+      setBoardState({
+        ...boardState,
+        board: newBoard
+      });
+    }
+    console.log(`handleClick finished with ${JSON.stringify(boardState)}`);
+  }
+
+  function toggleRevealMines() {
+    let toggleReveal = !boardState.boardRevealed;
+    if (toggleReveal === true) {
+      revealMines();
+    } else {
+      hideMines();
+    }
   }
 
   function revealMines() {
@@ -94,12 +113,36 @@ export default function Board(props) {
 
     setBoardState({
       ...boardState,
-      board: newBoard
+      board: newBoard,
+      boardRevealed: !boardState.boardRevealed
+    });
+  }
+
+  function hideMines() {
+    let board = boardState.board;
+    let newBoard = board.slice();
+    props.FIELD.forEach(mine => {
+      let affectedRow = newBoard[mine[0]].slice();
+      affectedRow[mine[1]] = {
+        ...affectedRow[mine[1]],
+        color: "gray"
+      };
+      newBoard[mine[0]] = affectedRow;
+    });
+
+    setBoardState({
+      ...boardState,
+      board: newBoard,
+      boardRevealed: !boardState.boardRevealed
     });
   }
 
   function logMines() {
     console.log(props.FIELD);
+  }
+
+  function logState() {
+    console.log(boardState);
   }
 
   return (
@@ -115,8 +158,9 @@ export default function Board(props) {
         }
         </tbody>
       </table>
-      <button onClick={revealMines}>REVEAL MINES</button>
+      <button onClick={toggleRevealMines}>REVEAL MINES</button>
       <button onClick={logMines}>Mine Cords</button>
+      <button onClick={logState}>DEBUG: Log boardState</button>
     </>
   );
 }
