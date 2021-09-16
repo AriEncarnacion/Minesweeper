@@ -25,7 +25,9 @@ export default function GenerateField(rows, cols, numMines) {
         cords.push(colRowPair); // pushes [row, col]
     }
     return cords;
+    // return [[1,1],[2,2]];
   }
+
 
   return initMineCords();
 }
