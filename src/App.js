@@ -5,7 +5,7 @@ function App() {
   return (
     <EasyGame NUM_ROWS={15}
               NUM_COLUMNS={15}
-              NUM_MINES={25}
+              NUM_MINES={50}
     />
   );
 }
