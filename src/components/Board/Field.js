@@ -38,6 +38,7 @@ export default class Field {
     }
     return cords;
     // return [[1,1],[2,2],[3,3]];
+    // return [[1,1],[2,2]];
   }
 
   //MARK: Logic for setting up adjacent mine counts for entire board
@@ -69,10 +70,8 @@ export default class Field {
       for(let c = 0; c < this.numCols; c++) {
         if(!this.checkForMines([r,c], minefield.slice())) {
           let adjacentMines = this.checkAdjacentCells(r,c, minefield.slice());
-          console.log(`[${r}, ${c}] has ${adjacentMines} adjacent mines.`);
           adjacent.push([r,c,adjacentMines]);
         } else {
-          console.log(`[${r}, ${c}] was a mine. skipping`);
         }
       }
     }

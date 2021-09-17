@@ -3,9 +3,9 @@ import EasyGame from "./pages/EasyGame";
 
 function App() {
   return (
-    <EasyGame NUM_ROWS={15}
-              NUM_COLUMNS={15}
-              NUM_MINES={50}
+    <EasyGame NUM_ROWS={8}
+              NUM_COLUMNS={8}
+              NUM_MINES={10}
     />
   );
 }

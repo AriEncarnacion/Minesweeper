@@ -1,6 +1,5 @@
 import {useState} from "react";
 import {Cell} from "../Cell/Cell";
-// import Stack from "../../Stack.js";
 
 let key = 1;
 function uniqueKey() {
@@ -50,6 +49,15 @@ function checkForMines(selected, mines) {
   return foundMine;
 }
 
+function checkForAdjacent(rowIdx, colIdx, adjacent) {
+    for (let i = 0; i < adjacent.length; i++) {
+      if (adjacent[i][0] === rowIdx && adjacent[i][1] === colIdx && adjacent[i][2] > 0) {
+        return adjacent[i][2];
+      }
+    }
+    return 0;
+}
+
 export default function Board(props) {
   const [boardState, setBoardState] = useState(initializeState(props));
 
@@ -60,8 +68,9 @@ export default function Board(props) {
     let newBoard = board.slice();
     let affectedRow = board[rowIdx].slice();
     let death = false;
+
     // MARK: Cell selection conditional
-    if (checkForMines([rowIdx, colIdx], props.FIELD[0])) {
+    if (checkForMines([rowIdx, colIdx], props.FIELD.getMineCords())) {
       console.log("BOOM!"); //DEBUG
       affectedRow[colIdx] = {
         ...affectedRow[colIdx],
@@ -70,8 +79,18 @@ export default function Board(props) {
       };
       newBoard[rowIdx] = affectedRow;
       death = true;
+    } else if (checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo()) > 0) {
+      console.log("clicked adjacent cell"); //DEBUG
+      affectedRow[colIdx] = {
+        ...affectedRow[colIdx],
+        color: "yellow",
+        isCleared: true,
+        number: checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())
+      };
+      newBoard[rowIdx] = affectedRow;
     } else {
       console.log("safe......"); //DEBUG
+      sweepFromOrigin(rowIdx, colIdx);
       boardState.cleared.forEach(cell => {
         if (isInBounds(cell[0], cell[1])) {
           let affectedRow = newBoard[cell[0]].slice();
@@ -83,14 +102,13 @@ export default function Board(props) {
           } else {
             affectedRow[cell[1]] = {
               ...affectedRow[cell[1]],
-              color: "yellow"
+              color: "yellow",
+              number: cell[2]
             };
           }
           newBoard[cell[0]] = affectedRow;
         } else {
-          console.log(`cell ${cell} out of bounds, skipping`); //DEBUG
         }
-
       });
     }
 
@@ -99,25 +117,74 @@ export default function Board(props) {
       board: newBoard,
       gameOver: death
     });
-    // console.log(`handleClick finished with ${JSON.stringify(boardState)}`);
   }
 
   function isInBounds(rowIdx, colIdx) {
-    // console.log(`[${rowIdx}, ${colIdx}] IS BOUND ${rowIdx >= 0 && colIdx >= 0 && rowIdx <= props.NUM_ROWS - 1 && colIdx <= props.NUM_COLUMNS - 1}`);
     return rowIdx >= 0 && colIdx >= 0 && rowIdx <= props.NUM_ROWS - 1 && colIdx <= props.NUM_COLUMNS - 1;
   }
 
-  // function checkAdjacentCells(rowIdx, colIdx) {
-  //   let mineCount = 0;
-  //   for(let r = rowIdx - 1; r <= rowIdx + 1; r++) {
-  //     for (let c = colIdx - 1; c <= colIdx + 1; c++) {
-  //         if (checkForMines([r,c], props.FIELD[0])) {
-  //           mineCount++;
-  //         }
-  //       }
-  //   }
-  //   return mineCount;
-  // }
+  function sweepFromOrigin(rowIdx, colIdx) {
+    let initMineCount = checkAdjacentCells(rowIdx, colIdx);
+    let backlog = [[rowIdx, colIdx, initMineCount]];
+
+    while(backlog.length > 0) {
+      let cord = backlog.at(-1);
+      backlog.pop();
+
+      let r = cord.slice()[0] - 1;
+      let c = cord.slice()[1] - 1;
+      let rEnd = cord.slice()[0] + 1;
+      let cEnd = cord.slice()[1] + 1;
+
+      if (r < 0) {
+        r = 0;
+      }
+
+      if (c < 0) {
+        c = 0;
+      }
+
+      while (r <= rEnd && isInBounds(r,c)) {
+        while (c <= cEnd && isInBounds(r,c)) {
+          if (!checkForMines([r, c], props.FIELD.getMineCords())) {
+            let mineCount = checkAdjacentCells(r, c);
+            if (JSON.stringify(boardState.cleared).includes(JSON.stringify([r, c, mineCount]))) {
+              c++;
+              continue;
+            }
+            if (mineCount === 0) {
+              backlog.push([r, c, mineCount]);
+              boardState.cleared.push([r, c, mineCount]);
+            } else {
+              boardState.cleared.push([r, c, mineCount]);
+            }
+          }
+          c++;
+        }
+        r++;
+        c = cord.slice()[1] - 1;
+        if (r < 0) {
+          r = 0;
+        }
+
+        if (c < 0) {
+          c = 0;
+        }
+      }
+    }
+  }
+
+  function checkAdjacentCells(rowIdx, colIdx) {
+    let mineCount = 0;
+    for(let r = rowIdx - 1; r <= rowIdx + 1; r++) {
+      for (let c = colIdx - 1; c <= colIdx + 1; c++) {
+          if (checkForMines([r,c], props.FIELD.getMineCords())) {
+            mineCount++;
+          }
+        }
+    }
+    return mineCount;
+  }
 
   function toggleRevealMines() {
     let toggleReveal = !boardState.boardRevealed;
