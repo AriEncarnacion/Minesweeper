@@ -5,7 +5,7 @@ export const Cell = (props) => {
     <td className={"Cell"}
         onClick={() => props.handleClick(props.rowIdx, props.colIdx)}
         style={{backgroundColor: props.cell.color}}>
-    </td>
+      {props.cell.number}</td>
   );
 }
 
