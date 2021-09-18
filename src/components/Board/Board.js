@@ -1,7 +1,6 @@
 import {useState} from "react";
 import {Cell} from "../Cell/Cell";
 import {colours} from "../../colours";
-// import Field from "./Field";
 
 let key = 1;
 function uniqueKey() {
@@ -61,7 +60,7 @@ function checkForMines(selected, mines) {
   return foundMine;
 }
 
-function checkForAdjacent(rowIdx, colIdx, adjacent) {
+function checkIfAdjacent(rowIdx, colIdx, adjacent) {
     for (let i = 0; i < adjacent.length; i++) {
       if (adjacent[i][0] === rowIdx && adjacent[i][1] === colIdx && adjacent[i][2] > 0) {
         return adjacent[i][2];
@@ -74,19 +73,14 @@ function checkFlagCase(affectedRow, rowIdx, colIdx, toggleFlag) {
   let colour;
 
   if (toggleFlag === true) {
-    console.log("flag!"); //DEBUG
     colour = colours.flag;
   } else if (toggleFlag === false && affectedRow[colIdx].isCleared) {
-    console.log("unflagging, returning to cleared blank")
     colour = colours.clearedSafe;
   } else if (toggleFlag === false && affectedRow[colIdx].isMineRevealed) {
-    console.log("unflagging, returning to uncovered mine")
     colour = colours.mineUncovered;
   } else if (toggleFlag === false && affectedRow[colIdx].isClearedAdj) {
-    console.log("unflagging, returning to cleared adjacent")
     colour = colours.clearedAdj
   } else {
-    console.log("unflagging, returning to neutral"); //DEBUG
     colour = colours.neutral;
   }
 
@@ -104,12 +98,10 @@ export default function Board(props) {
 
   function handleRightClick(e, rowIdx, colIdx, flagged) {
     e.preventDefault(); // prevent right click menu from showing when clicking board
-    console.log(`handleRightClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`); //DEBUG
 
     if (!boardState.gameOver) {
 
       let toggleFlag = !flagged;
-      console.log(`toggleFlag is: ${toggleFlag}`);
       let board = boardState.board;
       let newBoard = board.slice();
       let affectedRow = board[rowIdx].slice();
@@ -125,7 +117,7 @@ export default function Board(props) {
   }
 
   function handleClick(rowIdx, colIdx) {
-    console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`); //DEBUG
+    console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`);
 
     let board = boardState.board;
     let newBoard = board.slice();
@@ -139,7 +131,7 @@ export default function Board(props) {
         console.log(`[${rowIdx}, ${colIdx}] flagged, ignoring clear.`);
 
       } else if (checkForMines([rowIdx, colIdx], props.FIELD.getMineCords())) {
-        console.log("BOOM!"); //DEBUG
+        console.log("BOOM!");
 
         props.FIELD.getMineCords().forEach(mine => {
           let affectedRow = newBoard[mine[0]].slice();
@@ -157,16 +149,24 @@ export default function Board(props) {
           statusMessage: "You lose :("
         });
 
-      } else if (checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo()) > 0) {
-        console.log("clicked adjacent cell"); //DEBUG
+      } else if (checkIfAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo()) > 0) {
+        console.log("clicked adjacent cell");
 
-        boardState.cleared.push([rowIdx, colIdx, checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())]);
+        if (boardState.cleared.length === 0) {
+          boardState.cleared.push([rowIdx, colIdx, checkIfAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())]);
+        }
+
+        if (JSON.stringify(boardState.cleared).includes(JSON.stringify([rowIdx, colIdx, countAdjacentMines(rowIdx, colIdx)]))) {
+          console.log(`[${rowIdx}, ${colIdx}] was cleared before`)
+        } else {
+          boardState.cleared.push([rowIdx, colIdx, checkIfAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())]);
+        }
 
         affectedRow[colIdx] = {
           ...affectedRow[colIdx],
           color: colours.clearedAdj,
           isClearedAdj: true,
-          number: checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())
+          number: checkIfAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())
         };
 
         newBoard[rowIdx] = affectedRow;
@@ -176,7 +176,7 @@ export default function Board(props) {
         });
       } else {
 
-        console.log("safe......"); //DEBUG
+        console.log("safe..."); //DEBUG
         sweepFromOrigin(rowIdx, colIdx);
         boardState.cleared.forEach(cell => {
           let affectedRow = newBoard[cell[0]].slice();
@@ -194,7 +194,6 @@ export default function Board(props) {
               number: cell[2]
             };
           } else {
-            console.log(`[${cell[0]}, ${cell[1]}] was flagged before`)
             affectedRow[cell[1]] = {
               ...affectedRow[cell[1]]
             }
@@ -208,12 +207,8 @@ export default function Board(props) {
       }
     }
 
-    let checkClearedCount = (props.NUM_ROWS * props.NUM_COLUMNS) - boardState.cleared.length;
-
-    console.log(`cleared count: ${checkClearedCount}`);
-    console.log(`win: ${checkClearedCount === props.NUM_MINES}`);
-
-    if(checkClearedCount === props.NUM_MINES) {
+    console.log(`Squares to clear: ${(props.NUM_ROWS * props.NUM_COLUMNS) - boardState.cleared.length}`);
+    if(((props.NUM_ROWS * props.NUM_COLUMNS) - boardState.cleared.length) === props.NUM_MINES) {
       setBoardState({
         ...boardState,
         board: newBoard,
@@ -222,16 +217,6 @@ export default function Board(props) {
       });
     }
   }
-
-  // function checkForWin(props, cleared) {
-  //   if(((props.NUM_ROWS * props.NUM_COLUMNS) - cleared.length) === props.NUM_MINES) {
-  //     setBoardState({
-  //       ...boardState,
-  //       gameWin: true,
-  //       statusMessage: "You win!"
-  //     });
-  //   }
-  // }
 
   function resetGame() {
     let board = boardState.board;
@@ -269,7 +254,7 @@ export default function Board(props) {
   }
 
   function sweepFromOrigin(rowIdx, colIdx) {
-    let initMineCount = checkAdjacentCells(rowIdx, colIdx);
+    let initMineCount = countAdjacentMines(rowIdx, colIdx);
     let backlog = [[rowIdx, colIdx, initMineCount]];
 
     while(backlog.length > 0) {
@@ -292,7 +277,7 @@ export default function Board(props) {
       while (r <= rEnd && isInBounds(r,c)) {
         while (c <= cEnd && isInBounds(r,c)) {
           if (!checkForMines([r, c], props.FIELD.getMineCords())) {
-            let mineCount = checkAdjacentCells(r, c);
+            let mineCount = countAdjacentMines(r, c);
             if (JSON.stringify(boardState.cleared).includes(JSON.stringify([r, c, mineCount]))) {
               c++;
               continue;
@@ -319,7 +304,7 @@ export default function Board(props) {
     }
   }
 
-  function checkAdjacentCells(rowIdx, colIdx) {
+  function countAdjacentMines(rowIdx, colIdx) {
     let mineCount = 0;
     for(let r = rowIdx - 1; r <= rowIdx + 1; r++) {
       for (let c = colIdx - 1; c <= colIdx + 1; c++) {
