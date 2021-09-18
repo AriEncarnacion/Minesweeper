@@ -91,7 +91,7 @@ export default function Board(props) {
       console.log("unflagging, returning to uncovered mine")
       colour = colours.mineUncovered;
     } else if (toggleFlag === false && affectedRow[colIdx].isClearedAdj) {
-      console.log("unflagging, returning to clearead adjacent")
+      console.log("unflagging, returning to cleared adjacent")
       colour = colours.clearedAdj
     } else {
       console.log("unflagging, returning to neutral"); //DEBUG
@@ -125,7 +125,6 @@ export default function Board(props) {
     });
   }
 
-  // TODO: clearing cells must not clear flagged cells
   function handleClick(rowIdx, colIdx) {
     console.log(`handleClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`); //DEBUG
 
@@ -135,7 +134,9 @@ export default function Board(props) {
     let death = false;
 
     // MARK: Cell selection conditional
-    if (checkForMines([rowIdx, colIdx], props.FIELD.getMineCords())) {
+    if (affectedRow[colIdx].isFlagged) {
+      console.log(`[${rowIdx}, ${colIdx}] flagged, ignoring clear.`);
+    } else if (checkForMines([rowIdx, colIdx], props.FIELD.getMineCords())) {
       console.log("BOOM!"); //DEBUG
       affectedRow[colIdx] = {
         ...affectedRow[colIdx],
@@ -159,19 +160,24 @@ export default function Board(props) {
       boardState.cleared.forEach(cell => {
         if (isInBounds(cell[0], cell[1])) {
           let affectedRow = newBoard[cell[0]].slice();
-          if(cell[2] === 0) {
+          if(cell[2] === 0 && affectedRow[cell[1]].isFlagged === false) {
             affectedRow[cell[1]] = {
               ...affectedRow[cell[1]],
               isCleared: true,
               color: colours.clearedSafe
             };
-          } else {
+          } else if (cell[2] > 0 && affectedRow[cell[1]].isFlagged === false) {
             affectedRow[cell[1]] = {
               ...affectedRow[cell[1]],
               color: colours.clearedAdj,
               isClearedAdj: true,
               number: cell[2]
             };
+          } else {
+            console.log(`[${cell[0]}, ${cell[1]}] was flagged before`)
+            affectedRow[cell[1]] = {
+              ...affectedRow[cell[1]]
+            }
           }
           newBoard[cell[0]] = affectedRow;
         } else {
