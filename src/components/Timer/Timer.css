@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;1,700&display=swap');
+
+.Timer {
+    position: relative;
+    margin-top: 25px;
+}
+
+.clock {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    color: #dddddd;
+    font-size: 35px;
+}
+
+.timer-btn {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    font-size: 20px;
+    background-color: #3b4f57;
+    border-color: #171f22;
+    color: #dddddd;
+    padding: 5px;
+    margin-right: 10px;
+}
