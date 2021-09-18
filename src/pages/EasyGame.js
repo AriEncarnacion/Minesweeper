@@ -2,10 +2,8 @@ import React, {Component} from "react";
 import Board from "../components/Board/Board";
 import './EasyGame.css';
 import Field from "../components/Board/Field";
-// import {colours} from "../colours";
 
-
-class EasyGame extends Component {
+export default class EasyGame extends Component {
 
   render() {
     return(
@@ -21,5 +19,3 @@ class EasyGame extends Component {
     </>);
   }
 }
-
-export default EasyGame;
