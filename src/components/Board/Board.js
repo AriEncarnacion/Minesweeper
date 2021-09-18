@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Cell} from "../Cell/Cell";
 import {colours} from "../../colours";
-
+// import Field from "./Field";
 
 let key = 1;
 function uniqueKey() {
@@ -30,7 +30,8 @@ function initializeState(props) {
     cleared,
     gameWin: false,
     gameOver: false,
-    boardRevealed: false
+    boardRevealed: false,
+    statusMessage: ''
   }
 }
 
@@ -69,60 +70,58 @@ function checkForAdjacent(rowIdx, colIdx, adjacent) {
     return 0;
 }
 
+function checkFlagCase(affectedRow, rowIdx, colIdx, toggleFlag) {
+  let colour;
+
+  if (toggleFlag === true) {
+    console.log("flag!"); //DEBUG
+    colour = colours.flag;
+  } else if (toggleFlag === false && affectedRow[colIdx].isCleared) {
+    console.log("unflagging, returning to cleared blank")
+    colour = colours.clearedSafe;
+  } else if (toggleFlag === false && affectedRow[colIdx].isMineRevealed) {
+    console.log("unflagging, returning to uncovered mine")
+    colour = colours.mineUncovered;
+  } else if (toggleFlag === false && affectedRow[colIdx].isClearedAdj) {
+    console.log("unflagging, returning to cleared adjacent")
+    colour = colours.clearedAdj
+  } else {
+    console.log("unflagging, returning to neutral"); //DEBUG
+    colour = colours.neutral;
+  }
+
+  affectedRow[colIdx] = {
+    ...affectedRow[colIdx],
+    color: colour,
+    isFlagged: toggleFlag
+  };
+
+  return affectedRow.slice();
+}
+
 export default function Board(props) {
   const [boardState, setBoardState] = useState(initializeState(props));
 
-  function checkFlagCase(affectedRow, rowIdx, colIdx, toggleFlag) {
-    // toggle flag on
-    // toggle flag off, return to cleared blank
-    // toggle flag off, return to cleared adjacent
-    // toggle flag off, return to uncovered mine
-    // toggle flag off, return to neutral
-
-    let colour = colours.mineUncovered;
-
-    if (toggleFlag === true) {
-      console.log("flag!"); //DEBUG
-      colour = colours.flag;
-    } else if (toggleFlag === false && affectedRow[colIdx].isCleared) {
-      console.log("unflagging, returning to cleared blank")
-      colour = colours.clearedSafe;
-    } else if (toggleFlag === false && affectedRow[colIdx].isMineRevealed) {
-      console.log("unflagging, returning to uncovered mine")
-      colour = colours.mineUncovered;
-    } else if (toggleFlag === false && affectedRow[colIdx].isClearedAdj) {
-      console.log("unflagging, returning to cleared adjacent")
-      colour = colours.clearedAdj
-    } else {
-      console.log("unflagging, returning to neutral"); //DEBUG
-      colour = colours.neutral;
-    }
-
-    affectedRow[colIdx] = {
-      ...affectedRow[colIdx],
-      color: colour,
-      isFlagged: toggleFlag
-    };
-
-    return affectedRow.slice();
-  }
-
   function handleRightClick(e, rowIdx, colIdx, flagged) {
     e.preventDefault(); // prevent right click menu from showing when clicking board
+    console.log(`handleRightClick called with rowIdx = ${rowIdx}, colIdx = ${colIdx}`); //DEBUG
 
-    let toggleFlag = !flagged;
-    console.log(`toggleFlag is: ${toggleFlag}`);
-    let board = boardState.board;
-    let newBoard = board.slice();
-    let affectedRow = board[rowIdx].slice();
+    if (!boardState.gameOver) {
 
-    affectedRow = checkFlagCase(affectedRow.slice(), rowIdx, colIdx, toggleFlag);
+      let toggleFlag = !flagged;
+      console.log(`toggleFlag is: ${toggleFlag}`);
+      let board = boardState.board;
+      let newBoard = board.slice();
+      let affectedRow = board[rowIdx].slice();
 
-    newBoard[rowIdx] = affectedRow;
-    setBoardState({
-      ...boardState,
-      board: newBoard
-    });
+      affectedRow = checkFlagCase(affectedRow.slice(), rowIdx, colIdx, toggleFlag);
+
+      newBoard[rowIdx] = affectedRow;
+      setBoardState({
+        ...boardState,
+        board: newBoard
+      });
+    }
   }
 
   function handleClick(rowIdx, colIdx) {
@@ -130,37 +129,58 @@ export default function Board(props) {
 
     let board = boardState.board;
     let newBoard = board.slice();
-    let affectedRow = board[rowIdx].slice();
-    let death = false;
 
-    // MARK: Cell selection conditional
-    if (affectedRow[colIdx].isFlagged) {
-      console.log(`[${rowIdx}, ${colIdx}] flagged, ignoring clear.`);
-    } else if (checkForMines([rowIdx, colIdx], props.FIELD.getMineCords())) {
-      console.log("BOOM!"); //DEBUG
-      affectedRow[colIdx] = {
-        ...affectedRow[colIdx],
-        color: colours.mineHit,
-        isCleared: true
-      };
-      newBoard[rowIdx] = affectedRow;
-      death = true;
-    } else if (checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo()) > 0) {
-      console.log("clicked adjacent cell"); //DEBUG
-      affectedRow[colIdx] = {
-        ...affectedRow[colIdx],
-        color: colours.clearedAdj,
-        isClearedAdj: true,
-        number: checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())
-      };
-      newBoard[rowIdx] = affectedRow;
-    } else {
-      console.log("safe......"); //DEBUG
-      sweepFromOrigin(rowIdx, colIdx);
-      boardState.cleared.forEach(cell => {
-        if (isInBounds(cell[0], cell[1])) {
+    if (!boardState.gameOver && !boardState.gameWin) {
+
+      let affectedRow = board[rowIdx].slice();
+
+      // MARK: Cell selection conditional
+      if (affectedRow[colIdx].isFlagged) {
+        console.log(`[${rowIdx}, ${colIdx}] flagged, ignoring clear.`);
+
+      } else if (checkForMines([rowIdx, colIdx], props.FIELD.getMineCords())) {
+        console.log("BOOM!"); //DEBUG
+
+        props.FIELD.getMineCords().forEach(mine => {
+          let affectedRow = newBoard[mine[0]].slice();
+          affectedRow[mine[1]] = {
+            ...affectedRow[mine[1]],
+            color: colours.mineHit
+          };
+          newBoard[mine[0]] = affectedRow;
+        });
+
+        setBoardState({
+          ...boardState,
+          board: newBoard,
+          gameOver: true,
+          statusMessage: "You lose :("
+        });
+
+      } else if (checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo()) > 0) {
+        console.log("clicked adjacent cell"); //DEBUG
+
+        boardState.cleared.push([rowIdx, colIdx, checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())]);
+
+        affectedRow[colIdx] = {
+          ...affectedRow[colIdx],
+          color: colours.clearedAdj,
+          isClearedAdj: true,
+          number: checkForAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())
+        };
+
+        newBoard[rowIdx] = affectedRow;
+        setBoardState({
+          ...boardState,
+          board: newBoard
+        });
+      } else {
+
+        console.log("safe......"); //DEBUG
+        sweepFromOrigin(rowIdx, colIdx);
+        boardState.cleared.forEach(cell => {
           let affectedRow = newBoard[cell[0]].slice();
-          if(cell[2] === 0 && affectedRow[cell[1]].isFlagged === false) {
+          if (cell[2] === 0 && affectedRow[cell[1]].isFlagged === false) {
             affectedRow[cell[1]] = {
               ...affectedRow[cell[1]],
               isCleared: true,
@@ -180,15 +200,67 @@ export default function Board(props) {
             }
           }
           newBoard[cell[0]] = affectedRow;
-        } else {
-        }
+        });
+        setBoardState({
+          ...boardState,
+          board: newBoard
+        });
+      }
+    }
+
+    let checkClearedCount = (props.NUM_ROWS * props.NUM_COLUMNS) - boardState.cleared.length;
+
+    console.log(`cleared count: ${checkClearedCount}`);
+    console.log(`win: ${checkClearedCount === props.NUM_MINES}`);
+
+    if(checkClearedCount === props.NUM_MINES) {
+      setBoardState({
+        ...boardState,
+        board: newBoard,
+        gameWin: true,
+        statusMessage: "You win!"
       });
+    }
+  }
+
+  // function checkForWin(props, cleared) {
+  //   if(((props.NUM_ROWS * props.NUM_COLUMNS) - cleared.length) === props.NUM_MINES) {
+  //     setBoardState({
+  //       ...boardState,
+  //       gameWin: true,
+  //       statusMessage: "You win!"
+  //     });
+  //   }
+  // }
+
+  function resetGame() {
+    let board = boardState.board;
+    let newBoard = board.slice();
+
+    for(let r = 0; r < props.NUM_ROWS; r++) {
+      for(let c = 0; c < props.NUM_COLUMNS; c++) {
+        let affectedRow = newBoard[r].slice();
+        affectedRow[c] = {
+          ...affectedRow[c],
+          color: colours.neutral,
+          isCleared: false,
+          isClearedAdj: false,
+          isFlagged: false,
+          isMineRevealed: false,
+          number: ''
+        }
+        newBoard[r] = affectedRow;
+      }
     }
 
     setBoardState({
       ...boardState,
       board: newBoard,
-      gameOver: death
+      cleared: [],
+      gameWin: false,
+      gameOver: false,
+      boardRevealed: false,
+      statusMessage: ''
     });
   }
 
@@ -260,6 +332,7 @@ export default function Board(props) {
   }
 
   function toggleRevealMines() {
+
     let board = boardState.board;
     let newBoard = board.slice();
 
@@ -308,7 +381,9 @@ export default function Board(props) {
         </tbody>
       </table>
       <button onClick={toggleRevealMines}>REVEAL MINES</button>
-      <button onClick={logState}>DEBUG: Log boardState</button>
+      <button disabled ={boardState.gameOver || boardState.gameWin} onClick={logState}>DEBUG: Log boardState</button>
+      <button onClick={resetGame}>Restart</button>
+      <p>{boardState.statusMessage}</p>
     </>
   );
 }
