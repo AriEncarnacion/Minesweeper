@@ -1,19 +1,21 @@
 import React, {Component} from "react";
 import Board from "../components/Board/Board";
-import './MediumGame.css';
+import './pages_CSS/Game.css';
 import Field from "../components/Board/Field";
+import {Settings} from "../Settings";
+import Timer from "../components/Timer/Timer";
 
 export default class MediumGame extends Component {
 
   render() {
     return(
       <>
-        <div className={'Easy-Game'}>
-          <Board className={"Small-Board"}
-                 FIELD={new Field(this.props.NUM_ROWS, this.props.NUM_COLUMNS, this.props.NUM_MINES)}
-                 NUM_ROWS={this.props.NUM_ROWS}
-                 NUM_COLUMNS={this.props.NUM_COLUMNS}
-                 NUM_MINES={this.props.NUM_MINES}
+        <div className={'Game'}>
+          <Board className={"Medium-Board"}
+                 FIELD={new Field(Settings["MedGame"].rows, Settings["MedGame"].cols, Settings["MedGame"].mines)}
+                 NUM_ROWS={Settings["MedGame"].rows}
+                 NUM_COLUMNS={Settings["MedGame"].cols}
+                 NUM_MINES={Settings["MedGame"].mines}
           />
         </div>
       </>);

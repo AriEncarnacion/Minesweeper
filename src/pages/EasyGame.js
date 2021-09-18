@@ -1,19 +1,31 @@
 import React, {Component} from "react";
 import Board from "../components/Board/Board";
-import './EasyGame.css';
+import './pages_CSS/Game.css';
 import Field from "../components/Board/Field";
+import {Settings} from "../Settings";
+import Timer from "../components/Timer/Timer";
 
 export default class EasyGame extends Component {
+
+  isTimerOn = (isOn) => {
+    console.log('starting timer');
+    return isOn;
+  }
+  //
+  // endTimer = () => {
+  //   console.log('stopping timer');
+  //   return false;
+  // }
 
   render() {
     return(
       <>
-        <div className={'Easy-Game'}>
+        <div className={'Game'}>
           <Board className={"Small-Board"}
-                 FIELD={new Field(this.props.NUM_ROWS, this.props.NUM_COLUMNS, this.props.NUM_MINES)}
-                 NUM_ROWS={this.props.NUM_ROWS}
-                 NUM_COLUMNS={this.props.NUM_COLUMNS}
-                 NUM_MINES={this.props.NUM_MINES}
+                 FIELD={new Field(Settings["EasyGame"].rows, Settings["EasyGame"].cols, Settings["EasyGame"].mines)}
+                 NUM_ROWS={Settings["EasyGame"].rows}
+                 NUM_COLUMNS={Settings["EasyGame"].cols}
+                 NUM_MINES={Settings["EasyGame"].mines}
           />
         </div>
     </>);

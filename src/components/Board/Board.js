@@ -1,6 +1,9 @@
 import {useState} from "react";
 import {Cell} from "../Cell/Cell";
-import {colours} from "../../colours";
+import {colours} from "../../assets/colours";
+import {Link} from "react-router-dom";
+import './Board.css'
+import Timer from "../Timer/Timer";
 
 let key = 1;
 function uniqueKey() {
@@ -156,9 +159,7 @@ export default function Board(props) {
           boardState.cleared.push([rowIdx, colIdx, checkIfAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())]);
         }
 
-        if (JSON.stringify(boardState.cleared).includes(JSON.stringify([rowIdx, colIdx, countAdjacentMines(rowIdx, colIdx)]))) {
-          console.log(`[${rowIdx}, ${colIdx}] was cleared before`)
-        } else {
+        if (!JSON.stringify(boardState.cleared).includes(JSON.stringify([rowIdx, colIdx, countAdjacentMines(rowIdx, colIdx)]))) {
           boardState.cleared.push([rowIdx, colIdx, checkIfAdjacent(rowIdx, colIdx, props.FIELD.getAdjacentInfo())]);
         }
 
@@ -207,8 +208,18 @@ export default function Board(props) {
       }
     }
 
-    console.log(`Squares to clear: ${(props.NUM_ROWS * props.NUM_COLUMNS) - boardState.cleared.length}`);
+    console.log(`Squares to clear until win: ${(props.NUM_ROWS * props.NUM_COLUMNS) - boardState.cleared.length - props.FIELD.getMineCords().length}`);
     if(((props.NUM_ROWS * props.NUM_COLUMNS) - boardState.cleared.length) === props.NUM_MINES) {
+
+      props.FIELD.getMineCords().forEach(mine => {
+        let affectedRow = newBoard[mine[0]].slice();
+        affectedRow[mine[1]] = {
+          ...affectedRow[mine[1]],
+          color: colours.flag
+        };
+        newBoard[mine[0]] = affectedRow;
+      });
+
       setBoardState({
         ...boardState,
         board: newBoard,
@@ -347,28 +358,46 @@ export default function Board(props) {
     });
   }
 
-  function logState() {
-    console.log(boardState);
-  }
-
   return (
     <>
-      <table className={"GameBoard"}>
-        <tbody>
-        {
-          boardState.board.map((row, rowIdx) => (<Row key={uniqueKey()}
-                                                              row={row}
-                                                              rowIdx={rowIdx}
-                                                              handleClick={handleClick}
-                                                              handleRightClick={handleRightClick}
-          />))
-        }
-        </tbody>
-      </table>
-      <button onClick={toggleRevealMines}>REVEAL MINES</button>
-      <button disabled ={boardState.gameOver || boardState.gameWin} onClick={logState}>DEBUG: Log boardState</button>
-      <button onClick={resetGame}>Restart</button>
-      <p>{boardState.statusMessage}</p>
+      <div className={'Shell'}>
+        <div className={"Toolbar"}>
+          <button disabled={boardState.gameOver || boardState.gameWin} onClick={toggleRevealMines} className={"gameboard-btn"}>REVEAL MINES</button>
+          <button onClick={resetGame} className={"gameboard-btn"}>Restart</button>
+          <Link to={"/"}>
+            <button className={"gameboard-btn"}>Change Difficulty</button>
+          </Link>
+        </div>
+
+        <p className={"instructions"}>
+          <ul className={"instructions-list"}>
+            <li>Left click to clear mines. If you're unlucky, you might hit a mine on the first try!</li>
+            <li>Right click to toggle flags on cells. Flags highlight cells in <span style={{color: colours.flag}}>light pink.</span></li>
+            <li>Revealing mines highlights cells in <span style={{color: colours.mineUncovered}}>light red.</span></li>
+            <li>Standard Minesweeper rules apply.</li>
+            <li>If you want to time yourself, use the timer below!</li>
+          </ul>
+        </p>
+
+
+        <table className={"GameBoard"}>
+          <tbody>
+          {
+            boardState.board.map((row, rowIdx) => (<Row key={uniqueKey()}
+                                                                row={row}
+                                                                rowIdx={rowIdx}
+                                                                handleClick={handleClick}
+                                                                handleRightClick={handleRightClick}
+            />))
+          }
+          </tbody>
+        </table>
+
+        <Timer className={"Timer"}/>
+
+        <p className={"game-msg"}>{boardState.statusMessage}</p>
+      </div>
+
     </>
   );
 }

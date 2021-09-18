@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;1,700&display=swap');
+
+.Shell {
+    padding: 25px;
+}
+
+.GameBoard {
+    position: relative;
+}
+
+.instructions {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 35px;
+    color: #dddddd;
+    margin-left: -20px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.game-msg {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 50px;
+    color: #dddddd;
+    margin-top: 25px;
+}
+
+.gameboard-btn {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    font-size: 20px;
+    background-color: #3b4f57;
+    border-color: #171f22;
+    color: #dddddd;
+    padding: 25px;
+    margin-right: 10px;
+}
+
+.gameboard-btn:disabled,
+button[disabled]{
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    font-size: 20px;
+    background-color: #3b4f57;
+    border-color: #171f22;
+    color: #424242;
+    padding: 25px;
+    margin-right: 10px;
+}

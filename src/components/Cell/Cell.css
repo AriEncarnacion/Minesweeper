@@ -1,4 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;1,700&display=swap');
+
 .Cell {
-    width: 25px;
-    height: 25px;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 700;
+    font-size: larger;
+    color: #171f22;
+    width: 35px;
+    height: 35px;
+
+    /* Prevent player from highlighting numbers in cells*/
+    user-select: none; /* standard syntax */
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -ms-user-select: none; /* IE10+ */
 }
