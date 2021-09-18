@@ -25,7 +25,6 @@ const Timer = () => {
       <div>
         <span className={"clock"}>{("0" + Math.floor((time / 60000) % 60)).slice(-2)}:</span>
         <span className={"clock"}>{("0" + Math.floor((time / 1000) % 60)).slice(-2)}</span>
-        {/*<span>{time}</span>*/}
       </div>
       <div>
         {!timerOn && time === 0 && (
