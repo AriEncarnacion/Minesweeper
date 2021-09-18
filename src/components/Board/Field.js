@@ -1,7 +1,6 @@
 export default class Field {
 
   //MARK: Logic for creating minefield
-
   constructor(rows, cols, numMines) {
     this.numRows = rows;
     this.numCols = cols;
@@ -37,8 +36,6 @@ export default class Field {
         cords.push(colRowPair); // pushes [row, col]
     }
     return cords;
-    // return [[1,1],[2,2],[3,3]];
-    // return [[1,1],[2,2]];
   }
 
   //MARK: Logic for setting up adjacent mine counts for entire board

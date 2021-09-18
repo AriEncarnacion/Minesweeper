@@ -1,4 +1,5 @@
 import './Cell.css';
+
 export const Cell = (props) => {
 
   return (
