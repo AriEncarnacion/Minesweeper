@@ -109,13 +109,15 @@ export default function Board(props) {
       let newBoard = board.slice();
       let affectedRow = board[rowIdx].slice();
 
-      affectedRow = checkFlagCase(affectedRow.slice(), rowIdx, colIdx, toggleFlag);
+      if (!affectedRow[colIdx].isCleared && !affectedRow[colIdx].isClearedAdj) {
+        affectedRow = checkFlagCase(affectedRow.slice(), rowIdx, colIdx, toggleFlag);
 
-      newBoard[rowIdx] = affectedRow;
-      setBoardState({
-        ...boardState,
-        board: newBoard
-      });
+        newBoard[rowIdx] = affectedRow;
+        setBoardState({
+          ...boardState,
+          board: newBoard
+        });
+      }
     }
   }
 
@@ -343,12 +345,20 @@ export default function Board(props) {
 
     props.FIELD.getMineCords().forEach(mine => {
       let affectedRow = newBoard[mine[0]].slice();
-      affectedRow[mine[1]] = {
-        ...affectedRow[mine[1]],
-        color: colour,
-        isMineRevealed: toggleReveal
-      };
-      newBoard[mine[0]] = affectedRow;
+      if (affectedRow[mine[1]].isFlagged) {
+        affectedRow[mine[1]] = {
+          ...affectedRow[mine[1]],
+          isMineRevealed: toggleReveal
+        };
+        newBoard[mine[0]] = affectedRow;
+      } else {
+        affectedRow[mine[1]] = {
+          ...affectedRow[mine[1]],
+          color: colour,
+          isMineRevealed: toggleReveal
+        };
+        newBoard[mine[0]] = affectedRow;
+      }
     });
 
     setBoardState({
@@ -362,22 +372,20 @@ export default function Board(props) {
     <>
       <div className={'Shell'}>
         <div className={"Toolbar"}>
-          <button disabled={boardState.gameOver || boardState.gameWin} onClick={toggleRevealMines} className={"gameboard-btn"}>REVEAL MINES</button>
+          <button disabled={boardState.gameOver || boardState.gameWin} onClick={toggleRevealMines} className={"reveal-btn"}>REVEAL MINES</button>
           <button onClick={resetGame} className={"gameboard-btn"}>Restart</button>
           <Link to={"/"}>
             <button className={"gameboard-btn"}>Change Difficulty</button>
           </Link>
         </div>
 
-        <p className={"instructions"}>
-          <ul className={"instructions-list"}>
-            <li>Left click to clear mines. If you're unlucky, you might hit a mine on the first try!</li>
-            <li>Right click to toggle flags on cells. Flags highlight cells in <span style={{color: colours.flag}}>light pink.</span></li>
-            <li>Revealing mines highlights cells in <span style={{color: colours.mineUncovered}}>light red.</span></li>
-            <li>Standard Minesweeper rules apply.</li>
-            <li>If you want to time yourself, use the timer below!</li>
-          </ul>
-        </p>
+        <ul className={"instructions"}>
+          <li>Left click to clear mines. If you're unlucky, you might hit a mine on the first try!</li>
+          <li>Right click to toggle flags on cells. Flags highlight cells in <span style={{color: colours.flag}}>light pink.</span></li>
+          <li>Revealing mines highlights cells in <span style={{color: colours.mineUncovered}}>light red.</span></li>
+          <li>Standard Minesweeper rules apply.</li>
+          <li>If you want to time yourself, use the timer below!</li>
+        </ul>
 
 
         <table className={"GameBoard"}>

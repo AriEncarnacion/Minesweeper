@@ -3,7 +3,6 @@ import Board from "../components/Board/Board";
 import './pages_CSS/Game.css';
 import Field from "../components/Board/Field";
 import {Settings} from "../Settings";
-import Timer from "../components/Timer/Timer";
 
 export default class HardGame extends Component {
 

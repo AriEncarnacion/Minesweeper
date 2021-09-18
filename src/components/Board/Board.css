@@ -6,6 +6,7 @@
 
 .GameBoard {
     position: relative;
+    border: 5px double #4c4f51;
 }
 
 .instructions {
@@ -39,7 +40,19 @@
     margin-right: 10px;
 }
 
-.gameboard-btn:disabled,
+.reveal-btn {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    font-size: 20px;
+    background-color: #754141
+;
+    border-color: #171f22;
+    color: #dddddd;
+    padding: 25px;
+    margin-right: 10px;
+}
+
+.reveal-btn:disabled,
 button[disabled]{
     font-family: 'Work Sans', sans-serif;
     font-weight: 400;
@@ -50,3 +63,4 @@ button[disabled]{
     padding: 25px;
     margin-right: 10px;
 }
+
