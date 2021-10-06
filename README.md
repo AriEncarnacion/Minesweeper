@@ -1,6 +1,8 @@
 # Minesweeper
 
-Basic Minesweeper game implemented in ReactJS.
+This repo contains Minesweeper, a game originating from the 1960s. This version has been implemented from scratch using ReactJS. This project was done as part of a undergraduate capstone CS course.
+
+## Dependencies
 
 Node is needed to run this program.
 Additional dependencies may be needed. A full list of dependencies can be seen in `package.json`.
@@ -14,9 +16,11 @@ Additional dependencies may be needed. A full list of dependencies can be seen i
     "react-scripts": "4.0.3",
     "web-vitals": "^1.1.2"
 ```
+To install these dependencies run `$ npm install`
 
-Once installed, run program using:
-```$ npm start```
+## Running the Game
+
+Once installed, run program using `$ npm start`
 
 This will automatically open up a browser where you will be able to play the game.
 
